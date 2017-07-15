@@ -1,35 +1,42 @@
+cfenollosa/os-tutorial の日本語訳(意訳です。)
+
+訳注：
+かなり意訳が入っています。内容的に怪しいと思いましたら原典を参照お願いします。謝りを指摘いただけるとなお助かります。
+
 os-tutorial
 ===========
 
-How to create an OS from scratch!
+スクラッチから OS を作成するHowto
 
-I have always wanted to learn how to make an OS from scratch. In college I was taught
-how to implement advanced features (pagination, semaphores, memory management, etc)
-but:
+私(cfenollosa さん)は OS をスクラッチから作成する方法を日頃から学びたいと思っていた。カレッジでは、Pagination, semaphores, memmory management などを教わったがそれらは、OSが起動した後の高度な機能だ。
 
+しかし：
+- OS をブートセクターから起動する方法を習得できなかった
 - I never got to start from my own boot sector
 - College is hard so I don't remember most of it.
 - I'm fed up with people who think that reading an already existing kernel, even if small, is 
 a good idea to learn operating systems.
 
-Inspired by [this document](http://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)
-and the [OSDev wiki](http://wiki.osdev.org/), I'll try to make short step-by-step READMEs and
-code samples for anybody to follow. Honestly, this tutorial is basically the first document but
-split into smaller pieces and without the theory.
+以下のドキュメントにインスパイアされて、ごく短いステップバイステップで README と code サンンプルを繰り返すことで
+誰もが落ちこぼれることなく理解できるようにと構成している。
+率直に言ってこのチュートリアル全体が、OS 開発における最初に理解すべきドキュメントの内容に過ぎないが、(わかりやすくするために)あえて細かく分割している
+またあえて、OS 開発のセオリーを逸脱している部分もある。
+- [this document](http://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)
+- [OSDev wiki](http://wiki.osdev.org/), I'll try to make short step-by-step READMEs and
 
-Updated: more sources: [the little book about OS development](https://littleosbook.github.io),
+参考ドキュメント追加：
+[the little book about OS development](https://littleosbook.github.io),
 [JamesM's kernel development tutorials](https://web.archive.org/web/20160412174753/http://www.jamesmolloy.co.uk/tutorial_html/index.html)
 
 
 Features
 --------
 
-- This course is a code tutorial aimed at people who are comfortable with low level computing. For example,
-programmers who have curiosity on how an OS works but don't have the time or willpower to start reading the Linux kernel
-top to bottom.
+- このチュートリアルはローレベルコンピューティングを楽しみたい人向けに構成している。例えば
+OS がどのように動くかに興味があるが、Linux Kernel ソースのの隅から隅まで読む時間も気力もないプログラマーがその一例です。
 - There is little theory. Yes, this is a feature. Google is your theory lecturer. Once you pass college, 
 excessive theory is worse than no theory because it makes things seem more difficult than they really are.
-- The lessons are tiny and may take 5-15 minutes to complete. Trust me and trust yourself. You can do it!
+- 1章は、5 - 15 分程度で読めるくらい短い。私(cfenollosa さん)と自分自信を信じて、You can do it!
 
 
 How to use this tutorial
@@ -59,27 +66,27 @@ TL;DR: First read the README on each folder, then the code files. If you're brav
 Strategy
 --------
 
-We will want to do many things with our OS:
+私たちの OS で実現したい機能:
 
-- Boot from scratch, without GRUB - DONE!
-- Enter 32-bit mode - DONE
-- Jump from Assembly to C - DONE!
-- Interrupt handling - DONE!
-- Screen output and keyboard input - DONE!
-- A tiny, basic `libc` which grows to suit our needs - DONE!
-- Memory management
-- Write a filesystem to store files
-- Create a very simple shell
-- User mode
+- GRUB なしでスクラッチコードで起動 - DONE!
+- 32-bit モードへ切り替え - DONE
+- Assembly から C 言語のコードへジャンプ - DONE!
+- 割り込みハンドラー - DONE!
+- 画面出力とキーボード入力(CUI) - DONE!
+- 最初の小さな`libc` あとで必要に応じてこれに追加機能を実装することができる - DONE!
+- メモリ管理
+- ファイルを保存するためにファイルシステムを書く
+- シンプルなシェル
+- ユーザーモード
 - Maybe we will write a simple text editor
 - Multiple processes and scheduling
 
 Probably we will go through them in that order, however it's soon to tell.
 
-If we feel brave enough:
+もっとチャレンジングなタスクとして:
 
-- A BASIC interpreter, like in the 70s!
-- A GUI
+- BASIC interpreter (70年代みたい。笑!)
+- GUI
 - Networking
 
 
