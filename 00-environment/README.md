@@ -1,13 +1,18 @@
-*Concepts you may want to Google beforehand: linux, mac, terminal, compiler, emulator, nasm, qemu*
+*予め　goolle するべき知識: linux, mac, terminal, compiler, emulator, nasm, qemu*
 
-**Goal: Install the software required to run this tutorial**
+**ゴール: このチュートリアルで使うソフトウェアをインストールする**
 
-I'm working on a Mac, though Linux is better because it will have all the standard tools already
-available for you.
+私(fenollosa さん)は、Macを使ってこのチュートリアルを書いているが、
+あなたが Linux を使用できる(使用している)ならばその方がより簡単かもしれない。
+なぜなら、Linux には標準で必要なツールが揃っているからです。
 
-On a mac, [install Homebrew](http://brew.sh) and then `brew install qemu nasm`
+もし Mac を使用するなら、[Homebrew をインストール] して `brew install qemu nasm` を実行して
+qemu と nasm をインストールしてください。
 
-Don't use the Xcode developer tools `nasm` if you have them installed, they won't work for the most cases. Always use `/usr/local/bin/nasm`
+注意:
+Xcode developer に含まれる `nasm` は使用しないこと。多くの場合それを使用するとうまくいかない。
+なので代わりに homebrew でインストールした `/usr/local/bin/nasm` を使用してください。
 
-On some systems qemu is split into multiple binaries. You may want
-to call `qemu-system-x86_64 binfile`
+qemu はインストールしたシステムによっては複数のバイナリに分割されていることがあります。
+その場合、`qemu-system-x86_64 binfile` などの intel cpu をエミュレートしたバイナリを使用してください。
+
