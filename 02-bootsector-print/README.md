@@ -5,25 +5,20 @@ registers(レジスタ)*
 
 私たちのとても小さな無限ループしかできないブートセクターを改良して何か表示してみましょう。そのために割り込みについても学びます。
 
-例として "Hello" という文字列を一つずつ表示することを考えてみます。
+例として "Hello" という文字列を表示することを考えてみます。
++ `al` レジスタ(`ax` レジスタの下位) に表示したい文字列を入れます。
++ `ah` レジスタ(`ax` レジスタの上位) に `0x0e` を入れます。
++ ビデオ割り込み `0x10` を起動します。
 
-On this example we are going to write each character of the "Hello"
-word into the register `al` (lower part of `ax`), the bytes `0x0e`
-into `ah` (the higher part of `ax`) and raise interrupt `0x10` which
-is a general interrupt for video services.
+`ah` レジスタに入力する `0x0e` は、`al` をttyモードで画面表示するファンクション(機能)です。
 
-`0x0e` on `ah` tells the video interrupt that the actual function
-we want to run is to 'write the contents of `al` in tty mode'.
+コード例では、 `ah` レジスタを一度しかセットしていませんが、もし cpu 上で他のプロセスが同時に動いていていると`ah` レジスタが予期しない値になっていることがあります。
 
-We will set tty mode only once though in the real world we 
-cannot be sure that the contents of `ah` are constant. Some other
-process may run on the CPU while we are sleeping, not clean
-up properly and leave garbage data on `ah`.
+`ah` レジスタに限らないですが、マルチプロセス動作中は、他のプロセスによってレジスタの値が書き換えられて、私たちのプロセスにとっては破壊され、ゴミデータが入っていることになります。
 
-For this example we don't need to take care of that since we are
-the only thing running on the CPU.
+ただ、今の段階のサンプルでは私たちのプロセスが CPUで動作する唯一のプロセスなのでレジスタやフラグの保護についてケアする必要はありません。
 
-Our new boot sector looks like this:
+文字表示する新しいブートセクター:
 ```nasm
 mov ah, 0x0e ; tty mode
 mov al, 'H'
@@ -32,23 +27,23 @@ mov al, 'e'
 int 0x10
 mov al, 'l'
 int 0x10
-int 0x10 ; 'l' is still on al, remember?
+int 0x10 ; 'l' はまだ al にセットされてる、本当?
 mov al, 'o'
 int 0x10
 
-jmp $ ; jump to current address = infinite loop
+jmp $ ; このアドレスに jump = 無限ループ
 
-; padding and magic number
+; 0 で埋めて、最後に magic number
 times 510 - ($-$$) db 0
 dw 0xaa55 
 ```
 
-You can examine the binary data with `xxd file.bin`
+`xxd file.bin` でやることもできますが、
 
-Anyway, you know the drill:
+nasm でやるにはこうなります:
 
 `nasm -fbin boot_sect_hello.asm -o boot_sect_hello.bin`
 
 `qemu boot_sect_hello.bin`
 
-Your boot sector will say 'Hello' and hang on an infinite loop
+ブートセクターは、'Hello' と言って、ハングアップするでしょう。
