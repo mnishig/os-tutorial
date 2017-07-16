@@ -1,4 +1,4 @@
-; A simple boot sector program that loops forever
+; 無限ループするだけのブートセクター
 loop:
     jmp loop
 
