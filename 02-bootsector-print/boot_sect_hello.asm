@@ -5,12 +5,12 @@ mov al, 'e'
 int 0x10
 mov al, 'l'
 int 0x10
-int 0x10 ; 'l' is still on al, remember?
+int 0x10 ; 'l' は本当に al にそのまま残ってる?
 mov al, 'o'
 int 0x10
 
-jmp $ ; jump to current address = infinite loop
+jmp $ ; このアドレスに jump = 無限ループ
 
-; padding and magic number
+; 0 詰と magic number
 times 510 - ($-$$) db 0
 dw 0xaa55 
