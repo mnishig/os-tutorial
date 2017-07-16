@@ -1,60 +1,64 @@
-*Concepts you may want to Google beforehand: assembler, BIOS*
+*予め google するべき知識: assembler, BIOS*
 
-**Goal: Create a file which the BIOS interprets as a bootable disk**
+**ゴール: BIOS がブートディスクとして認識することができるファイルを作る**
 
-This is very exciting, we're going to create our own boot sector!
+つまり私達のオリジナルのブートセクタを作ります。それはとてもエキサイティングで興味深いと思います！
 
-Theory
-------
+セオリー
+-------
 
-When the computer boots, the BIOS doesn't know how to load the OS, so it
-delegates that task to the boot sector. Thus, the boot sector must be
-placed in a known, standard location. That location is the first sector
-of the disk (cylinder 0, head 0, sector 0) and it takes 512 bytes.
+コンピューターが起動する時、BIOS は、OS を読み込む方法を知りません。そのタスクは、BIOS ではなく
+ブートセクタに任されています。なので、ブートセクタは BIOS が知っている(規定の)場所に配置する必要があります。
+その場所は、ディスクの最初のセクター(具体的には シリンダ 0、ヘッド 0、セクタ 0)になります。
+その大きは 512 バイトと決められています。
 
-To make sure that the "disk is bootable", the BIOS checks that bytes
-511 and 512 of the alleged boot sector are bytes `0xAA55`.
+訳注:
+上の説明は前提として、IBM PC 互換機で BIOS で FD から起動することを想定している。最近は、BIOS がなく EFI を実装した 
+PC が多く存在し、しかも BIOS 互換モードがない PC もある。qemu の上で OS を動作させる場合には上記の前提で問題ないが、
+実機で動かす場合には、EFI 対応を考慮する必要がある。
 
-This is the simplest boot sector ever:
+
+以下は、最もシンプルなブートセクター:
 
 ```
 e9 fd ff 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[ 29 more lines with sixteen zero-bytes each ]
+[ 29 行以上の 00 (16進数) が続く                 ]
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 55 aa
 ```
 
-It is basically all zeros, ending with the 16-bit value
-`0xAA55` (beware of indianness, x86 is little-endian). 
-The first three bytes perform an infinite jump
+注目するべきなのは、最後尾の値 `0xAA55` です。intel x86 はりトルエンディアンなので
+ブートセクターには 55 aa がひっくり返って記録されています。
+最初の 3 バイトは無限ループの jump 命令です。
 
 Simplest boot sector ever
 -------------------------
 
-You can either write the above 512 bytes
-with a binary editor, or just write a very
-simple assembler code:
+あなたは、上記 512 バイトのファイルをバイナリエディタ(hex エディタ)で書くこともできますが、
+アセンブラ言語で書けばすごく簡単になります；
 
 ```nasm
-; Infinite loop (e9 fd ff)
+; 無限ループ (e9 fd ff)
 loop:
     jmp loop 
 
-; Fill with 510 zeros minus the size of the previous code
+; 上のコード分を 510 バイトから除いたバイト数を 0  で埋める
 times 510-($-$$) db 0
 ; Magic number
 dw 0xaa55 
 ```
 
-To compile:
+コンパイル(アセンブル):
 `nasm -f bin boot_sect_simple.asm -o boot_sect_simple.bin`
 
-> OSX warning: if this drops an error, read chapter 00 again
+> OSX 注意: もしエラーが発生したら、チャプター 00 に戻ってインストールしてください。
 
-I know you're anxious to try it out (I am!), so let's do it:
+ちょっと怖いような気もしますが、動かしてみましょう:
 
 `qemu boot_sect_simple.bin`
 
-You will see a window open which says "Booting from Hard Disk..." and
-nothing else. When was the last time you were so excited to see an infinite
-loop? ;-)
+するとウィンドウが現れて、以下のようなメッセージが表示するはずです。
+"Booting from Hard Disk..."
+
+これでだけで、あとは何も起きません。ちょっと拍子抜けでしたか?
+
