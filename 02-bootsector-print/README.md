@@ -1,10 +1,11 @@
-*Concepts you may want to Google beforehand: interrupts, CPU
-registers*
+*予め google するべき知識: interrupts(割込み), CPU
+registers(レジスタ)*
 
-**Goal: Make our previously silent boot sector print some text**
+**ゴール: 私たちのブートセクターに文字列表示を追加する**
 
-We will improve a bit on our infinite-loop boot sector and print
-something on the screen. We will raise an interrupt for this.
+私たちのとても小さな無限ループしかできないブートセクターを改良して何か表示してみましょう。そのために割り込みについても学びます。
+
+例として "Hello" という文字列を一つずつ表示することを考えてみます。
 
 On this example we are going to write each character of the "Hello"
 word into the register `al` (lower part of `ax`), the bytes `0x0e`
