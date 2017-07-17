@@ -1,27 +1,23 @@
+[org 0x7c00]
 mov ah, 0x0e
 
 ; attempt 1
-; Fails because it tries to print the memory address (i.e. pointer)
-; not its actual contents
+; 'org' オフセットを考慮しない失敗する例
 mov al, "1"
 int 0x10
 mov al, the_secret
 int 0x10
 
 ; attempt 2
-; It tries to print the memory address of 'the_secret' which is the correct approach.
-; However, BIOS places our bootsector binary at address 0x7c00
-; so we need to add that padding beforehand. We'll do that in attempt 3
+; 'org' を考慮して正しく、the_secret のアドレスを取得した例
 mov al, "2"
 int 0x10
 mov al, [the_secret]
 int 0x10
 
 ; attempt 3
-; Add the BIOS starting offset 0x7c00 to the memory address of the X
-; and then dereference the contents of that pointer.
-; We need the help of a different register 'bx' because 'mov al, [ax]' is illegal.
-; A register can't be used as source and destination for the same command.
+; 0x7c00 を２度('org' の分と add bx 0x7c00)足してしまっている例。
+; 当然動かない。
 mov al, "3"
 int 0x10
 mov bx, the_secret
@@ -30,9 +26,9 @@ mov al, [bx]
 int 0x10
 
 ; attempt 4
-; We try a shortcut since we know that the X is stored at byte 0x2d in our binary
-; That's smart but ineffective, we don't want to be recounting label offsets
-; every time we change the code
+; 動作する例。この方法だとメモリリファレンスを使用していない。
+; だから、'org' モードが適用されない。
+; "X" のアドレスをダイレクトに計算して指定しています。
 mov al, "4"
 int 0x10
 mov al, [0x7c2d]
@@ -42,10 +38,11 @@ int 0x10
 jmp $ ; infinite loop
 
 the_secret:
-    ; ASCII code 0x58 ('X') is stored just before the zero-padding.
-    ; On this code that is at byte 0x2d (check it out using 'xdd file.bin')
+    ; ASCIIコード 0x58 ('X') を 0 パディングの前に置きます。
+    ; ここのオフセットは 0x2d になります。
+    ; ('xdd finle.bin' で確かめることができます。)
     db "X"
 
-; zero padding and magic bios number
+; zero パディングと BIOSマジックナンバー
 times 510-($-$$) db 0
 dw 0xaa55

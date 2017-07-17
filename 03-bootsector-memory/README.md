@@ -1,63 +1,59 @@
-*Concepts you may want to Google beforehand: memory offsets, pointers*
+*予め google するべき知識: メモリオフセット、ポインター*
 
-**Goal: Learn how the computer memory is organized**
+**ゴール: メモリがどんな仕組みで管理されているか学ぶ**
 
-Please open page 14 [of this document](
-http://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)<sup>1</sup>
-and look at the figure with the memory layout.
+[this document](
+http://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf)<sup>1</sup> の14ページを参照してメモリレイアウトの図を見てみてください。
 
-The only goal of this lesson is to learn where the boot sector is stored
+このレッスンではブートセクターがメモリのどの位置に読み込まれるのかを学ぶだけです。
 
-I could just bluntly tell you that the BIOS places it at `0x7C00` and
-get it done with, but an example with wrong solutions will make things clearer.
+単に BIOS　は　`0x7C00` に読み込まれると言ってこの章を終わりしてもいいのですがあまりにそっけないので、
+あえて間違った例をこのこと明確にしてみましょう。
 
-We want to print an X on screen. We will try 4 different strategies
-and see which ones work and why.
+X という文字を画面に表示することを考えます。
+4つの方法でどうなるか見てみます。
 
-**Open the file `boot_sect_memory.asm`**
+**`boot_sect_memory.asm` ファイルを開いてください**
 
-First, we will define the X as data, with a label:
+準備としてこんな感じに X の文字をラベルで定義します。:
 ```nasm
 the_secret:
     db "X"
 ```
 
-Then we will try to access `the_secret` in many different ways:
+`the_secret` アクセス方法はいくつかのアプローチを考えてみます:
 
 1. `mov al, the_secret`
 2. `mov al, [the_secret]`
 3. `mov al, the_secret + 0x7C00`
-4. `mov al, 2d + 0x7C00`, where `2d` is the actual position of the 'X' byte in the binary
+4. `mov al, 2d + 0x7C00`, `2d` はバイナリファイルでの X の場所だとします。
 
-Take a look at the code and read the comments.
+コードとコメントも同時にみてもらいたいのですが、
 
-Compile and run the code. You should see a string similar to `1[2¢3X4X`, where
-the bytes following 1 and 2 are just random garbage.
+コンパイル(アセンブル)して実行すると、`1[2¢3X4X` のような文字列が表示されます。1、2 の方法はランダムなゴミが表示されてしまいます。
 
 If you add or remove instructions, remember to compute the new offset of the X
 by counting the bytes, and replace `0x2d` with the new one.
 
-Please don't continue onto the next section unless you have 100% understood
-the boot sector offset and memory addressing.
+この先のセクションでは、オフセットとメモリアドレッシングについての理解が必要になります。十分に内容を把握してから先に進んでください。
 
 
-The global offset
+グローバルオフセット
 -----------------
 
-Now, since offsetting `0x7c00` everywhere is very inconvenient, assemblers let
-us define a "global offset" for every memory location, with the `org` command:
+0x7c00 はブートセクターのオフセットとして、先のセクションでも何度も使うのですが、このままだと不便なので "グローバルオフセット" を定義します。
+`org` コマンド:
+
 
 ```nasm
 [org 0x7c00]
 ```
 
-Go ahead and **open `boot_sect_memory_org.asm`** and you will see the canonical
-way to print data with the boot sector, which is now attempt 2. Compile the code
-and run it, and you will see how the `org` command affects each previous solution.
+**open `boot_sect_memory_org.asm`** を開いてブートセクターで文字表示する別のパターンを見てください。
 
 Read the comments for a full explanation of the changes with and without `org`
 
 -----
 
-[1] This whole tutorial is heavily inspired on that document. Please read the
+[1] 本チュートリアルは、この資料を見て強くインスパイアされました。Please read the
 root-level README for more information on that.
