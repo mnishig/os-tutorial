@@ -1,4 +1,5 @@
-[org 0x7c00] ; tell the assembler that our offset is bootsector code
+[org 0x7c00] ; アセンブラにブートセクターコードのオフセットを知らせる
+
 
 ; The main routine makes sure the parameters are ready and then calls the function
 mov bx, HELLO
