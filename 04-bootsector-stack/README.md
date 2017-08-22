@@ -1,15 +1,14 @@
-*Concepts you may want to Google beforehand: stack*
+*予め google するべき知識: スタック*
 
-**Goal: Learn how to use the stack**
+**ゴール: スタックの使い方を習得する**
 
-The usage of the stack is important, so we'll write yet another boot sector
-with an example.
+スタックの使い方を習得することは、重要なので新たに別の boot セクターのサンプルで学びます。
 
-Remember that the `bp` register stores the base address (i.e. bottom) of the stack,
-and `sp` stores the top, and that the stack grows downwards from `bp` (i.e. `sp` gets
-decremented)
+`bp` レジスターを用いてスタックのベースアドレス(下限のアドレス)を保持します。
+さらに、`sp` レジスタで上限のアドレスを保持します。なので `bp` から下位アドレスに向かってスタックが伸びていることになります。(`sp` アドレスは、`bp` レジスタより小さな値になります。)
 
-This lesson is quite straightforward, so jump ahead to the code.
+この章のレッスンは、本当にこれだけなので、あとはコードを参照してください。
 
-I suggest that you try accessing in-stack memory addresses by yourself, 
-at different points in the code, and see what happens.
+とはいえ、自分自身でスタックのアドレスにアクセスして色々やってみることをお勧めします。
+そして、その時何が起きているかを理解するといいでしょう。
+
