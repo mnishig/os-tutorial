@@ -1,43 +1,43 @@
-*Concepts you may want to Google beforehand: control structures,
-function calling, strings*
+*予め google するべき知識: アセンブラの制御構造、ファンクションコール、文字列*
 
-**Goal: Learn how to code basic stuff (loops, functions) with the assembler**
+**ゴール: スタックの使い方を習得する**
+**Goal: アセンブラの基本的にはコードの書き方を学ぶ**
 
-We are close to our definitive boot sector.
+私たちは、オリジナルのブートセクターを作るという目的にだいぶ近づいてきました。
 
-In lesson 7 we will start reading from the disk, which is the last step before
-loading a kernel. But first, we will write some code with control structures,
-function calling, and full strings usage. We really need to be comfortable with
-those concepts before jumping to the disk and the kernel.
+この先の レッスン7 では、カーネルロードの最後のステップとしてディスク読み込みを実装します。
+が、その前にアセンブラでの制御構造やファンクションコール、文字列の扱いを習得する必要があります。
+これは、本当にカーネルやディスクロードのプログラムを書く前にマスターする必要があります。
 
+文字列
+-----
 
-Strings
--------
-
-Define strings like bytes, but terminate them with a null-byte (yes, like C)
-to be able to determine their end.
+バイトデータのように文字列を定義することができます。ただし、文字列の末尾に null バイト(C言語と同じですね、)
+が必要です。末尾に null (0) があることで文字列が終わったことを示します。
 
 ```nasm
 mystring:
     db 'Hello, World', 0
 ```
 
-Notice that text surrounded with quotes is converted to ASCII by the assembler,
-while that lone zero will be passed as byte `0x00` (null byte)
+注意しなければいけないのは、' (クォート) で囲まれた文字列はアセンブラによりアスキー文字列に変換されますが、
+最後に 0x00 (nullバイト) が出てくるまでその変換を行います。
 
 
-Control structures
-------------------
+制御構造
+-------
 
-We have already used one: `jmp $` for the infinite loop.
+私たちは、すでに以下のようなjmp命令で無限ループを実装しました。:
 
-Assembler jumps are defined by the *previous* instruction result. For example:
+`jmp $` 
+
+アセンブラのジャンプは直前の命令の結果により動作が変わります。
 
 ```nasm
 cmp ax, 4      ; if ax = 4
-je ax_is_four  ; do something (by jumping to that label)
-jmp else       ; else, do another thing
-jmp endif      ; finally, resume the normal flow
+je ax_is_four  ; ax = 4 の時、ラベルに飛んで何か処理します。
+jmp else       ; そうでない場合、他の何かを行います。
+jmp endif      ; 最後に、正常系のフローを継続します。
 
 ax_is_four:
     .....
@@ -45,28 +45,29 @@ ax_is_four:
 
 else:
     .....
-    jmp endif  ; not actually necessary but printed here for completeness
+    jmp endif  ; この例では、本当は必要ありません。が理解のために入れています。(なくても結局、endifのアドレスに進む)
 
 endif:
 ```
 
-Think in your head in high level, then convert it to assembler in this fashion.
+ちょっと考えてみると、ジャンプ命令にはたくさんのパターンがあることに気づきます。
+例えば、条件式が = の場合や < の場合などたくさんあると思います。
+必要に応じて Google で検索して、その時々に即したジャンプ命令の詳細を調べてみてください。
 
-There are many `jmp` conditions: if equal, if less than, etc. They are pretty 
-intuitive but you can always Google them
 
+関数コール
+--------
 
-Calling functions
------------------
+もしかしたらすでに、関数コールは単にラベルにジャンプすることだと気づいているかもしれません。
 
-As you may suppose, calling a function is just a jump to a label.
+ただ、引数の取り扱いは少しトリッキーです。
+関数にパラメータを渡すには、2つのステップが必要になります:
 
-The tricky part are the parameters. There are two steps to working with parameters:
+1. プログラマーは、関数と共有するレジスタを把握する必要があります。共有するメモリアドレスも同様です。
+2. 関数コールの前後に副作用を避けるためのコードを追加する必要があります。
 
-1. The programmer knows they share a specific register or memory address
-2. Write a bit more code and make function calls generic and without side effects
-
-Step 1 is easy. Let's just agree that we will use `al` (actually, `ax`) for the parameters.
+ステップ 1
+これは簡単です。この例では `al` レジスタ (`ax` も同じ) を使用することにします。
 
 ```nasm
 mov al, 'X'
@@ -77,33 +78,33 @@ endprint:
 
 print:
     mov ah, 0x0e  ; tty code
-    int 0x10      ; I assume that 'al' already has the character
-    jmp endprint  ; this label is also pre-agreed
+    int 0x10      ; 私は、'al' に文字が格納されていることを保証します。
+    jmp endprint  ; 終了時の戻り先も予め決めておきます。
 ```
 
-You can see that this approach will quickly grow into spaghetti code. The current
-`print` function will only return to `endprint`. What if some other function
-wants to call it? We are killing code reusage.
+この例のアプローチだとすぐにコードが読みづらくなりいわゆる「スパゲッティコード」になってしまうだろう。
+`print` 関数は、`endprint` ラベルに戻っているがこのままだと `print` 関数をプログラムの他の場所で
+呼び出して再利用しにくい。もし、他の関数やプログラムの場所からこの `print` 関数を呼び出すと何が起こるだろう？
+あまり想像したくないことが起こることは確かだ。
+
 
 The correct solution offers two improvements:
 
-- We will store the return address so that it may vary
-- We will save the current registers to allow subfunctions to modify them
-  without any side effects
+- 戻り先(呼び出し元)のアドレスを記憶して関数を実行する
+- 関数を呼び出す前のレジスタ群の状態を保存して関数の内部で変更しても副作用を発生させない
 
-To store the return address, the CPU will help us. Instead of using a couple of
-`jmp` to call subroutines, use `call` and `ret`.
+戻り先(呼び出し元)のアドレスを記憶するには、2つのjump 命令の代わりに `call`、`ret` 命令の組を使えばいい。
 
-To save the register data, there is also a special command which uses the stack: `pusha`
-and its brother `popa`, which pushes all registers to the stack automatically and
-recovers them afterwards.
+レジスタの値を保存するには、スタックを使う特別な命令 `pusha`、`popa` を使う。
+`pusha` で全レジスタをスタックに退避して、あとで必要になったら`popa` で戻せばいい。
 
 
-Including external files
-------------------------
+外部ファイルのインクルード(読み込み)
+------------------------------
 
-I assume you are a programmer and don't need to convince you why this is
-a good idea.
+
+もしあなたがプログラマであると仮定するなら、インクルードを説明するまでもないでしょう。
+以下のように書けばいいです。(外部ファイルを読み込みます。)
 
 The syntax is
 ```nasm
@@ -111,25 +112,27 @@ The syntax is
 ```
 
 
-Printing hex values
--------------------
+16進数を表示する
+--------------
 
-In the next lesson we will start reading from disk, so we need some way
-to make sure that we are reading the correct data. File `boot_sect_print_hex.asm`
-extends `boot_sect_print.asm` to print hex bytes, not just ASCII chars.
+次のレッスンからディスク読み込みを学ぶと先ほども言いましたが、その前に正しいデータの入力方法を確かめてみます。
+`boot_sect_print.asm` と16進数の表示に拡張した `boot_sect_print_hex.asm` を作ります。
 
 
-Code! 
------
 
-Let's jump to the code. File `boot_sect_print.asm` is the subroutine which will
-get `%include`d in the main file. It uses a loop to print bytes on screen.
-It also includes a function to print a newline. The familiar `'\n'` is
-actually two bytes, the newline char `0x0A` and a carriage return `0x0D`. Please
-experiment by removing the carriage return char and see its effect.
 
-As stated above, `boot_sect_print_hex.asm` allows for printing of bytes.
+コード! 
+------
 
-The main file `boot_sect_main.asm` loads a couple strings and bytes,
-calls `print` and `print_hex` and hangs. If you understood
-the previous sections, it's quite straightforward.
+いよいよコードにジャンプする時です。
+`boot_sect_print.asm` ファイルは、メインのファイルからインクルードされるサブルーチンです。
+内部ではループ処理を用いて1文字づつを画面に表示します。さらに改行するファンクションも追加しています。`\n` で現される改行は実際には、2バイトのデータで表現されます。
+その2バイトとは、`0x0A` が newline 文字(改行) で `0x0D` がキャリッジリターン(カーソルを行の先頭に移動する)　です。
+試しに、キャリッジリターンを削除すると何が起きるか確かめてください。
+
+まずは、`boot_sect_print.asm` のみを追加して動作するようにしてその後で
+`boot_sect_hex.asm` を追加してください。
+
+メインファイル　`boot_sect_main.asm` では上記の2つのファイルをロードし、
+文字列または16進数の表示を行います。
+もしあなたがこれまでのセクションを理解していれば何も難しいことはないでしょう。
