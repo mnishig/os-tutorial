@@ -1,17 +1,13 @@
-*Concepts you may want to Google beforehand: 32-bit protected mode, VGA, video 
-memory*
+*予め google するべき知識: 32-bitプロテクトモード、VGA、ビデオメモリー
 
-**Goal: Print on the screen when on 32-bit protected mode**
+**ゴール: 32-bitプロテクモードで画面に表示をする**
 
-32-bit mode allows us to use 32 bit registers and memory addressing, 
-protected memory, virtual memory and other advantages, but we will lose
-BIOS interrupts and we'll need to code the GDT (more on this later)
+32-bit mode では、32bitレジスタと32bitのアドレスでのメモリアクセスすることやプロテクテッドメモリー、仮想メモリなどを使用ことが許される、
+ただ、32-bitモードに移行するとBIOSへのアクセスできなくなる。
+なので、GDTを使用するコードを書かなければならなくなる。(詳細は、この章の後半で)
 
-In this lesson we will write a new print string routine which works in
-32-bit mode, where we don't have BIOS interrupts, by directly manipulating
-the VGA video memory instead of calling `int 0x10`. The VGA memory starts
-at address `0xb8000` and it has a text mode which is useful to avoid
-manipulating direct pixels.
+この章では、新しい32-bit用の文字列表示ルーチンを書き、それは BIOSを
+使用せず、VGA ビデオメモリを直接操作して行う。BIOS `int 0x10`を使用せず、メモリアドレス`0xb80000` 以降のtextモードを利用する。
 
 
 The formula for accessing a specific character on the 80x25 grid is:
