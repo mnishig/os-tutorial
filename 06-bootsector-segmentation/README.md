@@ -1,25 +1,28 @@
-*Concepts you may want to Google beforehand: segmentation*
+*予め google するべき知識: セグメンテーション*
 
-**Goal: learn how to address memory with 16-bit real mode segmentation**
+**ゴール: 16-ビット リアルモードでセグメンテーションを用いたアドレッシング方法について学ぶ**
 
-If you are comfortable with segmentation, skip this lesson.
+もしセグメンテーションについて十分に理解している場合、このセクションはスキップしてかまいません。
 
-We did segmentation
-with `[org]` on lesson 3. Segmentation means that you can specify
-an offset to all the data you refer to.
+レッスン3ですでに `[org]` 擬似命令を利用したセグメンテーションを使用していますが、
+セグメンテーションは、簡単に言うとメモリアクセスの際に、あるアドレスからのオフセット値を
+使ってアドレスを決定してアクセスする方法のことを言います。
 
-This is done by using special registers: `cs`, `ds`, `ss` and `es`, for
-Code, Data, Stack and Extra (i.e. user-defined)
+セグメンテーションを行うためには専用のレジスタを使用します。
+`cs`、`ds`、`ss`、`es` レジスタがそれにあたります、それぞれ用途別に
+コード、データ、スタックと拡張(ユーザー定義)の用途で使用します。
 
-Beware: they are *implicitly* used by the CPU, so once you set some
-value for, say, `ds`, then all your memory access will be offset by `ds`.
-[Read more here](http://wiki.osdev.org/Segmentation)
+注意: 上記のセグメンテーション用のレジスタは CPU からも「暗黙のうちに」利用されれます。
+これが意味することは例えば、一度 `ds` レジスタをセットするとメモリアクセスは
+`ds` からのオフセットでアクセスする必要があると言うことです。
+
+[参照] (http://wiki.osdev.org/Segmentation)
 
 Furthermore, to compute the real address we don't just join the two
 addresses, but we *overlap* them: `segment << 4 + address`. For example,
 if `ds` is `0x4d`, then `[0x20]` actually refers to `0x4d0 + 0x20 = 0x4f0`
 
-Enough theory. Have a look at the code and play with it a bit.
+さあ、理論はこれで十分です。コードをみてみましょう。
 
-Hint: We cannot `mov` literals to those registers, we have to
-use a general purpose register before.
+ヒント: `mov` セグメンテーション用のこれらのレジスタには `mov` 命令は使えません。
+そのため、一旦、汎用レジスタに値を設定する必要があります。
