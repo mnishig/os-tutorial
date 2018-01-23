@@ -1,63 +1,57 @@
-*Concepts you may want to Google beforehand: hard disk, cylinder, head, sector, 
-carry bit*
+*予め google するべき知識: ハードディスク、シリンダ、ヘッド、セクタ、キャリービット*
 
-**Goal: Let the bootsector load data from disk in order to boot the kernel**
+**ゴール: カーネルを起動するためにブートセクターでディスクからデータを読み込みます。**
 
-Our OS won't fit inside the bootsector 512 bytes, so we need to read data from
-a disk in order to run the kernel.
+我々の OS はブートセクタの512 バイトには収まらなくなります。となるとカーネルを実行する時にディスクからデータを読み込む必要があります。
 
-Thankfully, we don't have to deal with turning spinning platters on and off,
-we can just call some BIOS routines, like we did to print characters on the screen.
-To do so, we set `al` to `0x02` (and other registers with the required cylinder, head
-and sector) and raise `int 0x13`
+幸い、私たちは、どのプラッターを回転させるかどうかなんてことは気にしなくていい、ただいくつかの BIOS こーるをするだけですみます。
+`al` に `0x02` をセットしてさらにシリンダ、やヘッド、セクターを指定し `int 0x13` をコール呼び出すと
+ディスクにアクセスできる。
+それは、前のセクションで文字を画面表示したのとよく似た方法です。
 
-You can access [a detailed int 13h guide here](http://stanislavs.org/helppc/int_13-2.html)
+[参照: int 13h ガイド here](http://stanislavs.org/helppc/int_13-2.html)
 
-On this lesson we will use for the first time the *carry bit*, which is an extra bit
-present on each register which stores when an operation has overflowed its current
-capacity:
+
+このレッスンでは初めて *carry bit* を使用します。
+*carry bit* は、命令を実行した結果、使用したレジスタの桁数をオーバーしたかを示すものです。:
 
 ```nasm
 mov ax, 0xFFFF
 add ax, 1 ; ax = 0x0000 and carry = 1
 ```
 
-The carry isn't accessed directly but used as a control structure by other operators,
-like `jc` (jump if the carry bit is set)
-
-The BIOS also sets `al` to the number of sectors read, so always compare it
-to the expected number.
+キャリービットは、直接アクセスすることはできません。`jc` のような制御命令を使って間接的にアクセスします。`jc` 命令はキャリービットがセットされているとジャンプをする命令です。
 
 
-Code
-----
+コード
+-----
 
-Open and examine `boot_sect_disk.asm` for the complete routine that
-reads from disk.
+`boot_sect_disk.asm` では、ディスクリードを完成させています。
 
-`boot_sect_main.asm` prepares the parameters for disk read and calls `disk_load`.
+`boot_sect_main.asm` はディスク読込みに必要なパラメータを準備して `disk_load`を呼び出しています。
+ブートセクターの外にどういう方法でデータを書き出しているかに注意してください。
 Notice how we write some extra data which does not actually belong to the boot
 sector, since it is outside the 512 bits mark.
 
-The boot sector is actually sector 1 (the first one, sectors start at 1)
-of cylinder 0 of head 0 of hdd 0.
+ブートセクターは通常セクター1に配置されます(セクター番号は 1 から始まりますから、最初のセクターということです)。つまり、シリンダー 0、ヘッド 0、セクター 1という HDD0上の場所を示しています。
 
-Thus, any bytes after byte 512 correspond to sector 2 of cylinder 0 of head 0 of hdd 0
+だから、1セクター目の512バイトより後のデータは、セクター 2 以降に配置することになります。
 
+メインルーティンでは、ブートセクターを読込んだあと？時？サンプルデータをセクター 2 に書込んで
+フィルして(埋めて)います。
 The main routine will fill it with sample data and then let the bootsector
 read it.
 
-**Note: if you keep getting errors and your code seems fine, make sure that qemu
-is booting from the right drive and set the drive on `dl` accordingly**
+""注意: 動作させてみてコードが正しいように見えるのにエラーが出る場合、qemu が起動させたドライブ(A: とか C:)を正しく指し示すよう `dl` レジスタの値を変更してください。**
 
-The BIOS sets `dl` to the drive number before calling the bootloader. However,
-I found some problems with qemu when booting from the hdd.
+BIOS はブートセクタが読み込まれる前に `dl` レジスタをセットしてしまいます。
+私(原作者)が気づいた限りでは、qemu が HDD 起動している場合に発生するようだ。
 
-There are two quick options:
+これは2つの方法で回避できる:
 
-1. Try the flag `-fda` for example, `qemu -fda boot_sect_main.bin` which will set `dl`
-as `0x00`, it seems to work fine then.
-2. Explicitly use the flag `-boot`, e.g. `qemu boot_sect_main.bin -boot c` which 
-automatically sets `dl` as `0x80` and lets the bootloader read data
+1. `-fda` フラグ。`qemu -fda boot_sect_main.bin` とすると `dl` レジスタには、
+`0x00` がセットされ、正常に動作するようだ。
+2. `-boot` フラグ。`qemu boot_sect_main.bin -boot c` とすると `dl` レジスタは、
+`0x80` がセットされるこれは、HDD0 を意味するで、うまくいくようだ。
 
 
