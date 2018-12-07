@@ -1,4 +1,4 @@
-*予め google するべき知識: 32-bitプロテクトモード、VGA、ビデオメモリー
+*予め google するべき知識: 32-bitプロテクトモード、VGA、ビデオメモリー*
 
 **ゴール: 32-bitプロテクモードで画面に表示をする**
 
@@ -9,19 +9,16 @@
 この章では、新しい32-bit用の文字列表示ルーチンを書き、それは BIOSを
 使用せず、VGA ビデオメモリを直接操作して行う。BIOS `int 0x10`を使用せず、メモリアドレス`0xb80000` 以降のtextモードを利用する。
 
-
-The formula for accessing a specific character on the 80x25 grid is:
+80桁x25行のキャラクタスクリーンにアクセスするには、以下の式で示すアドレスを指定する:
 
 `0xb8000 + 2 * (row * 80 + col)`
 
-That is, every character uses 2 bytes (one for the ASCII, another for 
-color and such), and we see that the structure of the memory concatenates
-rows.
+上の式を見ても分かる通り、1文字あたり2バイトを使用する。(1バイトがアスキーコード、2バイト目が色を示す)
+それが画面の文字数分だけ連続してメモリ領域を占める。
 
-Open `32bit-print.asm` to see the code. It will always print the string
-on the top left of the screen, but soon we'll write higher level routines
-to replace it.
+`32bit-print.asm` では、常に画面の左上に文字を表示しているが、
+そのすぐ後に、別の文字列に書き換えるという動作をしている。
 
-Unfortunately we cannot yet call this routine from the bootloader, because
-we still don't know how to write the GDT and enter protected mode. Once
-you have understood the code, jump to the next lesson.
+ただ、まだこのルーチンをブートローダーから直接呼び出すことができない。
+なぜなら GDT の書き方をプロテクトモードに移行する方法を知らないからです。
+ここでは一旦、画面出力の方法を理解して次のレッスンに進んでください。

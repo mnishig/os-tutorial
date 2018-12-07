@@ -39,8 +39,6 @@ sector, since it is outside the 512 bits mark.
 
 メインルーティンでは、ブートセクターを読込んだあと？時？サンプルデータをセクター 2 に書込んで
 フィルして(埋めて)います。
-The main routine will fill it with sample data and then let the bootsector
-read it.
 
 ""注意: 動作させてみてコードが正しいように見えるのにエラーが出る場合、qemu が起動させたドライブ(A: とか C:)を正しく指し示すよう `dl` レジスタの値を変更してください。**
 

@@ -1,10 +1,10 @@
-*Concepts you may want to Google beforehand: GDT*
+*予め google するべき知識: GDT*
 
-**Goal: program the GDT**
+**ゴール: GDTのプログラムを書く**
 
-Remember segmentation from lesson 6? The offset was left shifted
-to address an extra level of indirection.
+レッスン6でオフセットを左シフトして間接的により大きなアドレス空間にアクセスする方法を学んだことをおぼえていますか?
 
+32-ビット モードでは、16-ビット モードとはセグメンテーションの動作は異なります。オフセットはセグメントディスクリプター(SD)は GDT の一部としてセットされます。
 In 32-bit mode, segmentation works differently. Now, the offset becomes an
 index to a segment descriptor (SD) in the GDT. This descriptor defines
 the base address (32 bits), the size (20 bits) and some flags, like
